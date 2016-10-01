@@ -14,6 +14,9 @@ var road = {x: 0, y: 0};
 var train = {x: 0, y: 0};
 var trains = new Array();
 
+var trainSpeed = 1;
+var osc;
+
 function newStation(example, type, x, y) {
 	if (example) {
 		sideStations.push({type: type, x: x, y: y});
@@ -33,6 +36,12 @@ function setup() {
 	road.x = radius/2;
 	train.x = road.x;
 	train.y = 7*radius*2;
+
+	// A triangle oscillator
+	osc = new p5.TriOsc();
+	// Start silent
+  	osc.start();
+  	osc.amp(0);
 }
 
 function draw() {
@@ -58,12 +67,13 @@ function draw() {
 	for (var i = 0; i < placedStations.length; i++) {
 		colour = getColourFromType(placedStations[i].type)
 		fill(colour);
+
 		ellipse(placedStations[i].x, placedStations[i].y, radius, radius);
 	}
 	fill(0);
 	rect(road.x, road.y, radius, radius/2);
 	fill("#FF0000");
-	rect(train.x, train.y, radius, radius/2);
+	rect(train.x, train.y, radius, radius/2);//.transform({rotation:90});
 	if (trainSelected) {
 		rect(mouseX-radius/2, mouseY-radius/4, radius, radius/2);
 	}
@@ -133,6 +143,8 @@ function mousePressed() {
 						}
 					}
 					roads = numList;
+					playNote(placedStations[i].type, radius);
+
 					placedStations.splice(i, 1);
 					break;
 				}
@@ -168,6 +180,10 @@ function mousePressed() {
 	redraw();
 }
 
+function mouseReleased() {
+  osc.fade(0,0.5);
+}
+
 function getColourFromType(type) {
 	var colour = "#000000";
 	if (type == 1) {
@@ -200,5 +216,31 @@ function line_intersects(p0_x, p0_y, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y) {
     }
 
     return false; // No collision
+}
+
+function playNote(type, radius) {
+	var note = 62;
+
+	if (type == 1) {
+		note = 64;
+	}
+	else if (type == 2) {
+		note =65;
+	}
+	else if (type == 3) {
+		note = 67;
+	}
+
+	duration = radius*8;
+	osc.freq(midiToFreq(note));
+	// Fade it in
+  	osc.fade(0.5,0.2);
+
+  	// If we sest a duration, fade it out
+  	if (duration) {
+    	setTimeout(function() {
+      	osc.fade(0,0.2);
+    	}, duration-50);
+  	}
 }
 
