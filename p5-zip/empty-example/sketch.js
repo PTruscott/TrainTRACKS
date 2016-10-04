@@ -57,26 +57,39 @@ function draw() {
 		line(pinnedStation.x, pinnedStation.y, mouseX, mouseY);
 	}
 
-
 	var colour;
 	for (var i = 0; i < sideStations.length; i++) {
 		colour = getColourFromType(sideStations[i].type)
 		fill(colour);
 		ellipse(sideStations[i].x, sideStations[i].y, radius, radius);
 	}
+
 	for (var i = 0; i < placedStations.length; i++) {
 		colour = getColourFromType(placedStations[i].type)
 		fill(colour);
 
 		ellipse(placedStations[i].x, placedStations[i].y, radius, radius);
 	}
+
 	fill(0);
 	rect(road.x, road.y, radius, radius/2);
 	fill("#FF0000");
-	rect(train.x, train.y, radius, radius/2);//.transform({rotation:90});
+	rect(train.x, train.y, radius, radius/2);
+
 	if (trainSelected) {
-		rect(mouseX-radius/2, mouseY-radius/4, radius, radius/2);
+		var r = trainOverLine(mouseX, mouseY);
+		if (!r) {
+			rect(mouseX-radius/2, mouseY-radius/4, radius, radius/2);
+		}
+		else {
+			var theta = toDegrees(Math.atan((r.station1.y-r.station2.y)/(r.station1.x-r.station2.x)));
+			var centre = getClosestPointOnLine(r.station1, r.station2, [mouseX, mouseY]);
+			push();
+			drawCar(centre[0], centre[1], theta);
+			pop();
+		}
 	}
+
 	for (var i = 0; i < trains.length; i++) {
 		rect(trains[i].road.station1.x-radius/2, trains[i].road.station1.y-radius/4, radius, radius/2);
 	}
@@ -84,8 +97,6 @@ function draw() {
 		fill(getColourFromType(activeType));
 		ellipse(mouseX, mouseY, radius, radius);;
 	}
-
-
 }
 
 function mousePressed() {
@@ -101,23 +112,11 @@ function mousePressed() {
 		}
 		else if (trainSelected) {
 			for (var i = 0; i < roads.length; i++) {			
-				if (line_intersects(
-					roads[i].station1.x, roads[i].station1.y, roads[i].station2.x, roads[i].station2.y,
-					mouseX-radius/2, mouseY-radius/4, mouseX-radius/2, mouseY+radius/4) || 
-					line_intersects(
-					roads[i].station1.x, roads[i].station1.y, roads[i].station2.x, roads[i].station2.y,
-					mouseX-radius/2, mouseY-radius/4, mouseX+radius/2, mouseY-radius/4) || 
-					line_intersects(
-					roads[i].station1.x, roads[i].station1.y, roads[i].station2.x, roads[i].station2.y,
-					mouseX+radius/2, mouseY-radius/4, mouseX+radius/2, mouseY+radius/4) || 
-					line_intersects(
-					roads[i].station1.x, roads[i].station1.y, roads[i].station2.x, roads[i].station2.y,
-					mouseX-radius/2, mouseY+radius/4, mouseX+radius/2, mouseY+radius/4)) {
-					trains.push({road:roads[i]});
+				var t = trainOverLine(mouseX, mouseY);
+				if (t) {
+					trains.push({road:t});
 					trainSelected = false;
-					break;
 				}
-				
 			}
 		}
 		else if (roadStatus == "blank") {
@@ -136,13 +135,27 @@ function mousePressed() {
 					(placedStations[i].x-mouseX)*(placedStations[i].x-mouseX) + 
 					(mouseY-placedStations[i].y)*(mouseY-placedStations[i].y)) 
 					< radius) {
-					var numList = new Array();
+					var roadList = new Array();
+					var dList = new Array();
 					for (var j = 0; j < roads.length; j++) {
 						if (!(roads[j].station1 == placedStations[i] || roads[j].station2 == placedStations[i])) {
-							numList.push(roads[j]);
+							roadList.push(roads[j]);
+						}
+						else {
+							dList.push(roads[j]);
 						}
 					}
-					roads = numList;
+					var tList = new Array();
+					top:for (var j = 0; j < trains.length; j++) {
+						for (var k = 0; k < dList.length; k++) {
+							if (trains[j].road == dList[k]) {
+								break top;
+							}
+						}
+						tList.push(trains[j]);
+					}
+					trains = tList;
+					roads = roadList;
 					playNote(placedStations[i].type, radius);
 
 					placedStations.splice(i, 1);
@@ -181,7 +194,7 @@ function mousePressed() {
 }
 
 function mouseReleased() {
-  osc.fade(0,0.5);
+  //osc.fade(0,0.5);
 }
 
 function getColourFromType(type) {
@@ -198,24 +211,37 @@ function getColourFromType(type) {
 	return colour;
 }
 
-function line_intersects(p0_x, p0_y, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y) {
-    var s1_x, s1_y, s2_x, s2_y;
-    s1_x = p1_x - p0_x;
-    s1_y = p1_y - p0_y;
-    s2_x = p3_x - p2_x;
-    s2_y = p3_y - p2_y;
+function drawCar(x, y, theta) {
+	p1 = rotatePoint(x, y, x-radius/2, y-radius/4, theta);
+	p2 = rotatePoint(x, y, x+radius/2, y-radius/4, theta);
+	p3 = rotatePoint(x, y, x+radius/2, y+radius/4, theta);
+	p4 = rotatePoint(x, y, x-radius/2, y+radius/4, theta);
+	beginShape();
+	vertex(p1[0], p1[1]);
+	vertex(p2[0], p2[1]);
+	vertex(p3[0], p3[1]);
+	vertex(p4[0], p4[1]);
+	endShape(CLOSE);
+}
 
-    var s, t;
-    s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y);
-    t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y);
-
-    if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
-    {
-        // Collision detected
-        return true;
-    }
-
-    return false; // No collision
+function trainOverLine(x, y) {
+	for (var i = 0; i < roads.length; i++) {			
+		if (line_intersects(
+			roads[i].station1.x, roads[i].station1.y, roads[i].station2.x, roads[i].station2.y,
+			x-radius/2, y-radius/4, mouseX-radius/2, y+radius/4) || 
+			line_intersects(
+			roads[i].station1.x, roads[i].station1.y, roads[i].station2.x, roads[i].station2.y,
+			mouseX-radius/2, y-radius/4, mouseX+radius/2, y-radius/4) || 
+			line_intersects(
+			roads[i].station1.x, roads[i].station1.y, roads[i].station2.x, roads[i].station2.y,
+			mouseX+radius/2, y-radius/4, mouseX+radius/2, y+radius/4) || 
+			line_intersects(
+			roads[i].station1.x, roads[i].station1.y, roads[i].station2.x, roads[i].station2.y,
+			mouseX-radius/2, y+radius/4, mouseX+radius/2, y+radius/4)) {
+			return roads[i];
+		}		
+	}
+	return false;
 }
 
 function playNote(type, radius) {
@@ -243,4 +269,3 @@ function playNote(type, radius) {
     	}, duration-50);
   	}
 }
-
