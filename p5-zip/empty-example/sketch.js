@@ -14,7 +14,7 @@ var road = {x: 0, y: 0};
 var train = {x: 0, y: 0};
 var trains = new Array();
 
-var trainSpeed = 1;
+var trainSpeed = 3;
 var osc;
 
 function newStation(example, type, x, y) {
@@ -84,14 +84,15 @@ function draw() {
 		else {
 			var theta = toDegrees(Math.atan((r.station1.y-r.station2.y)/(r.station1.x-r.station2.x)));
 			var centre = getClosestPointOnLine(r.station1, r.station2, [mouseX, mouseY]);
-			push();
 			drawCar(centre[0], centre[1], theta);
-			pop();
 		}
 	}
 
+	//drawing trains
 	for (var i = 0; i < trains.length; i++) {
-		rect(trains[i].road.station1.x-radius/2, trains[i].road.station1.y-radius/4, radius, radius/2);
+		var theta = toDegrees(Math.atan((trains[i].road.station1.y-trains[i].road.station2.y)/(trains[i].road.station1.x-trains[i].road.station2.x)));
+		drawCar(trains[i].x, trains[i].y, theta);
+		moveCar(trains[i]);
 	}
 	if (mouseClicked) {
 		fill(getColourFromType(activeType));
@@ -112,9 +113,10 @@ function mousePressed() {
 		}
 		else if (trainSelected) {
 			for (var i = 0; i < roads.length; i++) {			
-				var t = trainOverLine(mouseX, mouseY);
-				if (t) {
-					trains.push({road:t});
+				var r = trainOverLine(mouseX, mouseY);
+				if (r) {
+					var pos = getClosestPointOnLine(r.station1, r.station2, [mouseX, mouseY]);
+					trains.push({road:r, x:pos[0], y:pos[1], forward:true, docked: false});
 					trainSelected = false;
 				}
 			}
@@ -211,6 +213,48 @@ function getColourFromType(type) {
 	return colour;
 }
 
+function moveCar(train) {
+	var theta = toDegrees(Math.atan((train.road.station1.y-train.road.station2.y)/(train.road.station1.x-train.road.station2.x)));
+	if (train.forward) {
+			train.x += trainSpeed*Math.cos(toRadians(theta));
+			train.y += trainSpeed*Math.sin(toRadians(theta));
+		}
+	else {
+		train.x -= trainSpeed*Math.cos(toRadians(theta));
+		train.y -= trainSpeed*Math.sin(toRadians(theta));
+	}
+	if (trainDocked(train, train.road.station1) || trainDocked(train, train.road.station2)) {
+		if (!train.docked) {
+			if (trainDocked(train, train.road.station1)) {
+				var station = train.road.station1;
+			}
+			else {
+				var station = train.road.station2;
+			}
+			var connectRoads = new Array();
+			for (var i = 0; i < roads.length; i++) {
+				if ((roads[i].station1 == station || roads[i].station2 == station) && roads[i] != train.road) {
+					connectRoads.push(roads[i]);
+				}
+			}
+			if (connectRoads.length == 0) {
+				train.forward = !train.forward;
+			}
+			else {
+				var r = connectRoads[getRandomInt(0, connectRoads.length-1)];
+				if (r.station1 == train.road.station1) {
+					//train.forward = !train.forward;
+				}
+				train.road = r;
+			}
+			train.docked = true;
+		}
+	}
+	else {
+		train.docked = false;
+	}
+}
+
 function drawCar(x, y, theta) {
 	p1 = rotatePoint(x, y, x-radius/2, y-radius/4, theta);
 	p2 = rotatePoint(x, y, x+radius/2, y-radius/4, theta);
@@ -222,6 +266,14 @@ function drawCar(x, y, theta) {
 	vertex(p3[0], p3[1]);
 	vertex(p4[0], p4[1]);
 	endShape(CLOSE);
+}
+
+function trainDocked(train, station) {
+	if (Math.abs(train.x - station.x) < trainSpeed && Math.abs(train.y-station.y) < trainSpeed) {
+		playNote(station.type, radius);
+		return true;
+	}
+	return false;
 }
 
 function trainOverLine(x, y) {

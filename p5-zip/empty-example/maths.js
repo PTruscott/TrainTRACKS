@@ -53,3 +53,7 @@ function toRadians(theta) {
 function toDegrees(theta) {
   	return theta * (180/Math.PI);
 }
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
