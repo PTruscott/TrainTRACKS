@@ -27,7 +27,7 @@ function newStation(example, type, x, y) {
 }
 
 function setup() {
-	createCanvas(800, 800);
+	createCanvas(screen.width, screen.height);
 	frameRate(fr);
 	for (var i = 0; i < 4; i++) {
 		newStation(true, i, radius, (i+1)*radius*2.5);
@@ -45,8 +45,14 @@ function setup() {
 }
 
 function draw() {
-	background(255);
+	background('#ADD8E6');
 
+	//sidepanel
+	noStroke();
+	fill('#3399ff');
+	rect(0, 0, sideStations[0].x*2, screen.height);
+
+	strokeWeight(6);
 	stroke(0);
 	for (var i = 0; i < roads.length; i++) {
 		line(roads[i].station1.x, roads[i].station1.y,
@@ -74,25 +80,26 @@ function draw() {
 	fill(0);
 	rect(road.x, road.y, radius, radius/2);
 	fill("#FF0000");
-	rect(train.x, train.y, radius, radius/2);
+	noStroke();
+	rect(train.x-3, train.y-3, radius+6, radius/2+6);
 
 	if (trainSelected) {
 		var r = trainOverLine(mouseX, mouseY);
 		if (!r) {
-			rect(mouseX-radius/2, mouseY-radius/4, radius, radius/2);
+			rect(mouseX-radius/2-3, mouseY-radius/4-3, radius+6, radius/2+6);
 		}
 		else {
 			var theta = toDegrees(Math.atan((r.station1.y-r.station2.y)/(r.station1.x-r.station2.x)));
 			var centre = getClosestPointOnLine(r.station1, r.station2, [mouseX, mouseY]);
-			drawCar(centre[0], centre[1], theta);
+			drawTrain(centre[0], centre[1], theta);
 		}
 	}
 
 	//drawing trains
 	for (var i = 0; i < trains.length; i++) {
 		var theta = toDegrees(Math.atan((trains[i].road.station1.y-trains[i].road.station2.y)/(trains[i].road.station1.x-trains[i].road.station2.x)));
-		drawCar(trains[i].x, trains[i].y, theta);
-		moveCar(trains[i]);
+		drawTrain(trains[i].x, trains[i].y, theta);
+		moveTrain(trains[i]);
 	}
 	if (mouseClicked) {
 		fill(getColourFromType(activeType));
@@ -112,13 +119,16 @@ function mousePressed() {
 				trainSelected = !trainSelected;
 		}
 		else if (trainSelected) {
-			for (var i = 0; i < roads.length; i++) {			
-				var r = trainOverLine(mouseX, mouseY);
-				if (r) {
-					var pos = getClosestPointOnLine(r.station1, r.station2, [mouseX, mouseY]);
-					trains.push({road:r, x:pos[0], y:pos[1], forward:true, docked: false});
-					trainSelected = false;
+			var r = trainOverLine(mouseX, mouseY);
+			console.log(r);
+			if (r) {
+				var pos = getClosestPointOnLine(r.station1, r.station2, [mouseX, mouseY]);
+				var s = r.station2;
+				if (r.station1.y > r.station2.y) {
+					s = r.station1;
 				}
+				trains.push({road:r, x:pos[0], y:pos[1], docked: false, target: s});
+				trainSelected = false;
 			}
 		}
 		else if (roadStatus == "blank") {
@@ -213,40 +223,67 @@ function getColourFromType(type) {
 	return colour;
 }
 
-function moveCar(train) {
+function moveTrain(train) {
 	var theta = toDegrees(Math.atan((train.road.station1.y-train.road.station2.y)/(train.road.station1.x-train.road.station2.x)));
-	if (train.forward) {
-			train.x += trainSpeed*Math.cos(toRadians(theta));
-			train.y += trainSpeed*Math.sin(toRadians(theta));
-		}
+	if (train.target == train.road.station1) {
+		var otherStaion = train.road.station2;
+	}
+	else {
+		var otherStaion = train.road.station1;
+	}
+	if (train.target.x > otherStaion.x) {
+		train.x += trainSpeed*Math.cos(toRadians(theta));
+		train.y += trainSpeed*Math.sin(toRadians(theta));
+		//console.log("+");
+	}
 	else {
 		train.x -= trainSpeed*Math.cos(toRadians(theta));
 		train.y -= trainSpeed*Math.sin(toRadians(theta));
+		//console.log("-");
+
 	}
 	if (trainDocked(train, train.road.station1) || trainDocked(train, train.road.station2)) {
+
 		if (!train.docked) {
+
 			if (trainDocked(train, train.road.station1)) {
 				var station = train.road.station1;
+				train.x = train.road.station1.x;
+				train.y = train.road.station1.y;
 			}
 			else {
 				var station = train.road.station2;
 			}
+			train.x = station.x;
+			train.y = station.y;
+
 			var connectRoads = new Array();
 			for (var i = 0; i < roads.length; i++) {
 				if ((roads[i].station1 == station || roads[i].station2 == station) && roads[i] != train.road) {
 					connectRoads.push(roads[i]);
 				}
 			}
+
 			if (connectRoads.length == 0) {
-				train.forward = !train.forward;
+				if (train.road.station1 == train.target) {
+					train.target = train.road.station2;
+				}
+				else {
+					train.target = train.road.station1;
+				}
 			}
 			else {
 				var r = connectRoads[getRandomInt(0, connectRoads.length-1)];
-				if (r.station1 == train.road.station1) {
-					//train.forward = !train.forward;
+				if (r.station1 == train.target) {
+					train.target =  r.station2;
+				}
+				else {
+					train.target = r.station1;
+
 				}
 				train.road = r;
 			}
+
 			train.docked = true;
 		}
 	}
@@ -255,7 +292,7 @@ function moveCar(train) {
 	}
 }
 
-function drawCar(x, y, theta) {
+function drawTrain(x, y, theta) {
 	p1 = rotatePoint(x, y, x-radius/2, y-radius/4, theta);
 	p2 = rotatePoint(x, y, x+radius/2, y-radius/4, theta);
 	p3 = rotatePoint(x, y, x+radius/2, y+radius/4, theta);
