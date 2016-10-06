@@ -1,6 +1,4 @@
 var fr = 60
-var mouseClicked = false;
-var activeType = 0;
 var roadStatus = "blank";
 var diameter = 40;
 var trainSelected = false;
@@ -8,6 +6,7 @@ var trainSelected = false;
 var sideStations = new Array();
 var placedStations = new Array();
 var pinnedStation;
+var tempStation = {x:0, y:0, type:""};
 
 var roads = new Array();
 var road = {x: 0, y: 0};
@@ -50,7 +49,7 @@ function draw() {
 	//sidepanel
 	noStroke();
 	fill('#3399ff');
-	rect(0, 0, sideStations[0].x*2, screen.height);
+	rect(0, 0, sideStations[0].x*2, window.innerHeight);
 
 	strokeWeight(6);
 	stroke(0);
@@ -66,8 +65,7 @@ function draw() {
 }
 
 function mousePressed() {
-	if (mouseClicked) {
-		console.log("mouse");
+	if (tempStation.type != "") {
 		var bisect = false;
 		for (var i = 0; i < placedStations.length; i++) {
 			if (circlesBisect([mouseX,mouseY], diameter/2, [placedStations[i].x, placedStations[i].y], diameter/2)) {
@@ -76,10 +74,14 @@ function mousePressed() {
 				console.log(i);
 			}
 		}
+		if (circlesBisect(getClosestPointOnLine({x:sideStations[0].x*2, y:0}, {x:sideStations[0].x*2, y:window.innerHeight}, [mouseX, mouseY]), 0, [mouseX, mouseY], diameter)) bisect = true;
+		else if (circlesBisect(getClosestPointOnLine({x:0, y:0}, {x:window.innerWidth, y:0}, [mouseX, mouseY]), 0, [mouseX, mouseY], diameter)) bisect = true;
+		else if (circlesBisect(getClosestPointOnLine({x:0, y:window.innerHeight}, {x:window.innerWidth, y:window.innerHeight}, [mouseX, mouseY]), 0, [mouseX, mouseY], diameter)) bisect = true;
+		else if (circlesBisect(getClosestPointOnLine({x:window.innerWidth, y:window.innerHeight}, {x:window.innerWidth, y:0}, [mouseX, mouseY]), 0, [mouseX, mouseY], diameter)) bisect = true;
+
 		if (!bisect)  {
-			newStation(false, activeType, mouseX, mouseY);
-			mouseClicked = false;
-			console.log("circles");
+			newStation(false, tempStation.type, tempStation.x, tempStation.y);
+			tempStation.type = "";
 		}
 	}
 	else {
@@ -100,14 +102,16 @@ function mousePressed() {
 				trainSelected = false;
 			}
 		}
+
 		else if (roadStatus == "blank") {
+			//checked to see if clicked on side station
 			for (var i = 0; i < sideStations.length; i++) {
 				if (Math.sqrt(
 					(sideStations[i].x-mouseX)*(sideStations[i].x-mouseX) + 
 					(mouseY-sideStations[i].y)*(mouseY-sideStations[i].y)) 
 					< diameter) {
-					activeType = sideStations[i].type;
-					mouseClicked = true;
+					console.log("Side");
+					tempStation.type = sideStations[i].type;
 					break;
 				}
 			}

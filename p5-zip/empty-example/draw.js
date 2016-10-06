@@ -49,7 +49,7 @@ function drawStations() {
 	stroke(0);
 
 	for (var i = 0; i < sideStations.length; i++) {
-		if (sideStations[i].type == activeType && mouseClicked) {
+		if (sideStations[i].type == tempStation.type && tempStation.type != "") {
 			stroke(153);
 		}
 		else {
@@ -74,9 +74,11 @@ function drawStations() {
 	}
 	stroke(153);
 	
-	if (mouseClicked) {
-		fill(getColourFromType(activeType));
-		ellipse(mouseX, mouseY, diameter, diameter);;
+	if (tempStation.type != "") {
+		fill(getColourFromType(tempStation.type));
+		ellipse(mouseX, mouseY, diameter, diameter);
+		tempStation.x = mouseX;
+		tempStation.y = mouseY;
 	}
 }
 

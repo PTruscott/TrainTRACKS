@@ -29,7 +29,7 @@ function line_intersects(p0_x, p0_y, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y) {
     return false; // No collision
 }
 
-//where A and B are objects with .x and .y and P is an array where [0] = x and [1] = y
+//where A and B are points on a line with .x and .y and P is an array where [0] = x and [1] = y
 //I know it's terrible shush
 function getClosestPointOnLine(A, B, P) {
   	var a_to_p = [P[0] - A.x, P[1] - A.y];	
