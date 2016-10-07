@@ -1,3 +1,35 @@
+//where centres are arrays where [0] = x and [1] = y
+//returns a location a valid distance away to be able to be placed
+function closestValidCircle(centre1, radius1, centre2, radius2) {
+    var theta = Math.atan((centre1[1]-centre2[1])/(centre1[0]-centre2[0]));
+
+    var newPoint = centre1;
+
+    if (centre1[0] > centre2[0]) {
+        newPoint[0] -= (radius1+radius2)*Math.cos(theta);
+    }
+    else {
+        newPoint[0] += (radius1+radius2)*Math.cos(theta);
+    } 
+
+    dTheta = toDegrees(theta);
+    if (dTheta < 0 && centre1[1] > centre2[1]) {
+        newPoint[1] += (radius1+radius2)*Math.sin(theta);
+    }
+    else if (dTheta > 0 && centre1[1] > centre2[1]){
+        newPoint[1] -= (radius1+radius2)*Math.sin(theta);
+    } 
+    else if (dTheta < 0 && centre1[1] < centre2[1]) {
+        newPoint[1] -= (radius1+radius2)*Math.sin(theta);
+    }
+
+    else {
+        newPoint[1] += (radius1+radius2)*Math.sin(theta);
+    }
+
+    return newPoint;
+}
+
 
 //where centres are arrays where [0] = x and [1] = y
 //also used for point in circle by giving radius of 0 for point
@@ -45,6 +77,33 @@ function getClosestPointOnLine(A, B, P) {
   	var temp2 = (A.y + a_to_b[1]*t);
 
   	return [temp1, temp2];
+}
+  
+//locks the point so it remains inside the box specified
+//top left, bottom right, and point are all arrays where [0] = x and [1] = y
+function insideBox(tl, br, point, radius) {
+    var newPoint = point;
+    for (var i = 0; i < tl.length; i++) {
+      if (isNaN(tl[i]) || isNaN(br[i]) || isNaN(point[i]) || isNaN(radius)) {
+          console.warn("Number is NaN insideBox");
+      }
+    }
+
+    if (point[0] - radius < tl[0]) {
+        newPoint[0] = tl[0] + radius;
+    }
+    else if (point[0] + radius > br[0]) {
+        newPoint[0] = br[0]-radius;
+    }
+
+    if (point[1] - radius < tl[1]) {
+        newPoint[1] = tl[1] + radius;
+    }
+    else if (point[1] + radius > br[1]) {
+        newPoint[1] = br[1]-radius;
+
+    }
+    return newPoint;
 }
 
 //where rp is the rotation point, p is the point to be rotated, theta is the angle

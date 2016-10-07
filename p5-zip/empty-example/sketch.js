@@ -6,15 +6,18 @@ var trainSelected = false;
 var sideStations = new Array();
 var placedStations = new Array();
 var pinnedStation;
-var tempStation = {x:0, y:0, type:""};
+var tempStation = {x:0, y:0, type:15};
 
 var roads = new Array();
 var road = {x: 0, y: 0};
 var train = {x: 0, y: 0};
 var trains = new Array();
 
-var trainSpeed = 3;
+var trainSpeed;
+var stokeWidth;
 var osc;
+var snapToGrid = true;
+var gridSize;
 
 function newStation(example, type, x, y) {
 	if (example) {
@@ -26,11 +29,17 @@ function newStation(example, type, x, y) {
 }
 
 function setup() {
+	strokeWidth = 6;
 	createCanvas(window.innerWidth, window.innerHeight);
 	frameRate(fr);
 	for (var i = 0; i < 4; i++) {
 		newStation(true, i, diameter, (i+1)*diameter*2.5);
 	}
+	var h = window.innerHeight;
+	h -= strokeWidth;
+	gridSize = (h)/25;
+	trainSpeed = gridSize/4; 
+
 	road.y = 6*diameter*2;
 	road.x = diameter/2;
 	train.x = road.x;
@@ -51,6 +60,8 @@ function draw() {
 	fill('#3399ff');
 	rect(0, 0, sideStations[0].x*2, window.innerHeight);
 
+	drawGrid([sideStations[0].x*2, 0], [window.innerWidth, window.innerHeight], gridSize);
+
 	strokeWeight(6);
 	stroke(0);
 
@@ -65,24 +76,20 @@ function draw() {
 }
 
 function mousePressed() {
-	if (tempStation.type != "") {
-		var bisect = false;
-		for (var i = 0; i < placedStations.length; i++) {
-			if (circlesBisect([mouseX,mouseY], diameter/2, [placedStations[i].x, placedStations[i].y], diameter/2)) {
-				bisect = true;
-				break;
-				console.log(i);
-			}
-		}
-		if (circlesBisect(getClosestPointOnLine({x:sideStations[0].x*2, y:0}, {x:sideStations[0].x*2, y:window.innerHeight}, [mouseX, mouseY]), 0, [mouseX, mouseY], diameter)) bisect = true;
-		else if (circlesBisect(getClosestPointOnLine({x:0, y:0}, {x:window.innerWidth, y:0}, [mouseX, mouseY]), 0, [mouseX, mouseY], diameter)) bisect = true;
-		else if (circlesBisect(getClosestPointOnLine({x:0, y:window.innerHeight}, {x:window.innerWidth, y:window.innerHeight}, [mouseX, mouseY]), 0, [mouseX, mouseY], diameter)) bisect = true;
-		else if (circlesBisect(getClosestPointOnLine({x:window.innerWidth, y:window.innerHeight}, {x:window.innerWidth, y:0}, [mouseX, mouseY]), 0, [mouseX, mouseY], diameter)) bisect = true;
+	var side = false;
 
-		if (!bisect)  {
-			newStation(false, tempStation.type, tempStation.x, tempStation.y);
-			tempStation.type = "";
+	if (tempStation.type != 15 || roadStatus != "blank" || trainSelected) {
+		if (mouseX < sideStations[0].x*2) {
+			tempStation.type = 15;
+			roadStatus = "blank";
+			trainSelected = false;
+			side = true;
+			pinnedStation = "";	
 		}
+	}
+
+	if (tempStation.type != 15) {
+		newStation(false, tempStation.type, tempStation.x, tempStation.y);
 	}
 	else {
 		//check collisions and select if example or delete
@@ -94,23 +101,20 @@ function mousePressed() {
 			var r = trainOverLine(mouseX, mouseY);
 			if (r) {
 				var pos = getClosestPointOnLine(r.station1, r.station2, [mouseX, mouseY]);
-				var s = r.station2;
-				if (r.station1.y > r.station2.y) {
-					s = r.station1;
+				if (!circlesBisect(pos, diameter/2, [r.station1.x, r.station1.y], 0) && !circlesBisect(pos, diameter/2, [r.station2.x, r.station2.y], 0)) {
+					var s = r.station2;
+					if (r.station1.y > r.station2.y) {
+						s = r.station1;
+					}
+					trains.push({road:r, x:pos[0], y:pos[1], docked: false, target: s});
 				}
-				trains.push({road:r, x:pos[0], y:pos[1], docked: false, target: s});
-				trainSelected = false;
 			}
 		}
 
 		else if (roadStatus == "blank") {
 			//checked to see if clicked on side station
 			for (var i = 0; i < sideStations.length; i++) {
-				if (Math.sqrt(
-					(sideStations[i].x-mouseX)*(sideStations[i].x-mouseX) + 
-					(mouseY-sideStations[i].y)*(mouseY-sideStations[i].y)) 
-					< diameter) {
-					console.log("Side");
+				if (circlesBisect([mouseX,mouseY], diameter/2+3, [sideStations[i].x, sideStations[i].y], 0)) {
 					tempStation.type = sideStations[i].type;
 					break;
 				}
@@ -163,9 +167,9 @@ function mousePressed() {
 						roadStatus = "pinned";
 					}
 					else if (roadStatus == "pinned" && pinnedStation != placedStations[i]) {
-						roadStatus = "blank";
+						roadStatus = "pinned";
 						roads.push({station1: pinnedStation, station2: placedStations[i]});
-						pinnedStation = "";
+						pinnedStation = placedStations[i];
 
 					}
 					break;
@@ -296,7 +300,7 @@ function playNote(type, diameter) {
   	// If we sest a duration, fade it out
   	if (duration) {
     	setTimeout(function() {
-      	osc.fade(0,0.2);
+      		osc.fade(0,0.2);
     	}, duration-50);
   	}
 }
