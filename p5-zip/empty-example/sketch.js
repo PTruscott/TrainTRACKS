@@ -18,6 +18,8 @@ var stokeWidth;
 var osc;
 var snapToGrid = true;
 var gridSize;
+var windowWidth = window.innerWidth.valueOf();
+var windowHeight = window.innerHeight.valueOf();
 
 function newStation(example, type, x, y) {
 	if (example) {
@@ -30,14 +32,16 @@ function newStation(example, type, x, y) {
 
 function setup() {
 	strokeWidth = 6;
-	createCanvas(window.innerWidth, window.innerHeight);
+	
+	createCanvas(windowWidth, windowHeight);
 	frameRate(fr);
 	for (var i = 0; i < 4; i++) {
 		newStation(true, i, diameter, (i+1)*diameter*2.5);
 	}
-	var h = window.innerHeight;
+	var h = windowHeight;
 	h -= strokeWidth;
-	gridSize = (h)/25;
+	h -= diameter;
+	gridSize = (h)/15;
 	trainSpeed = gridSize/4; 
 
 	road.y = 6*diameter*2;
@@ -58,9 +62,11 @@ function draw() {
 	//sidepanel
 	noStroke();
 	fill('#3399ff');
-	rect(0, 0, sideStations[0].x*2, window.innerHeight);
+	rect(0, 0, sideStations[0].x*2, windowHeight);
+	var border = diameter/2+strokeWidth +strokeWidth/2; 
+	drawGrid([sideStations[0].x*2+border, border], [windowWidth-border, windowHeight-border], gridSize);
 
-	drawGrid([sideStations[0].x*2, 0], [window.innerWidth, window.innerHeight], gridSize);
+	//console.log(windowHeight);
 
 	strokeWeight(6);
 	stroke(0);

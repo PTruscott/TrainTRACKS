@@ -30,6 +30,61 @@ function closestValidCircle(centre1, radius1, centre2, radius2) {
     return newPoint;
 }
 
+function snapToGrid(centre, tl, br, gridS) {
+    var newPoint = centre;
+    //gets the border to try and centre the grid
+    var xBorder = ((br[0]-tl[0]) % gridS)/2;
+    var yBorder = ((br[1]-tl[1]) % gridS)/2;
+    var x1, y1, x2, y2;
+
+    for (var i = yBorder+tl[1]; i < br[1]; i += gridS) {
+        if ((i-gridS) < centre[1] && i > centre[1]) {
+            y1 = i-gridS;
+            y2 = i;
+        }
+    }
+    for (var i = xBorder+tl[0]; i < br[0]; i += gridS) {
+        if ((i-gridS) < centre[0] && i > centre[0]) {
+            x1 = i-gridS;
+            x2 = i;
+        }
+    }
+
+    var points = new Array();
+    points.push({x: x1, y:y1});
+    points.push({x: x1, y:y2});
+    points.push({x: x2, y:y1});
+    points.push({x: x2, y:y2});
+
+    for (var i = 0; i < placedStations.length; i++) {
+        for (var j = 0; j < points.length; j++) {
+            if (circlesBisect([placedStations[i].x, placedStations[i].y], diameter, [points[i].x, points[i].y], 0)) {
+                points[i].x -= 1000;
+            }
+        }
+    }
+
+
+
+    newPoint = closetVertexInRectToPoint(centre, [x1, y1, x2, y2]);
+
+    return newPoint;
+}
+
+//where centre is an array where [0] = x and [1] = y
+//where rect is an array where [0] = x1, [1] = y1, [2] = x2, [3] = y2
+function closetVertexInRectToPoint(centre, rect) {
+    var newPoint = new Array();
+    newPoint[0] = rect[0];
+    newPoint[1] = rect[1];
+    if (Math.abs(centre[0]-rect[0]) > Math.abs(centre[0]-rect[2])) {
+        newPoint[0] = rect[2];
+    }  
+    if (Math.abs(centre[1]-rect[1]) > Math.abs(centre[1]-rect[3])) {
+        newPoint[1] = rect[3];
+    }  
+    return newPoint;
+}
 
 //where centres are arrays where [0] = x and [1] = y
 //also used for point in circle by giving radius of 0 for point

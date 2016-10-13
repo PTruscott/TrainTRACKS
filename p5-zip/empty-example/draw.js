@@ -54,7 +54,7 @@ function drawAllTrains() {
 
 	}
 	else {
-		rect(train.x-stokeWidth/2, train.y-strokeWidth/2, diameter+strokeWidth, diameter/2+strokeWidth);
+		rect(train.x-strokeWidth/2, train.y-strokeWidth/2, diameter+strokeWidth, diameter/2+strokeWidth);	
 	}
 
 	for (var i = 0; i < trains.length; i++) {
@@ -101,12 +101,16 @@ function drawStations() {
 		var coords = insideBox([sideStations[0].x*2, 0], [window.innerWidth, window.innerHeight], [mouseX, mouseY], diameter/2);
 		tempStation.x = coords[0];
 		tempStation.y = coords[1];
-
-		for (var i = 0; i < placedStations.length; i++) {
-			if (circlesBisect([tempStation.x,tempStation.y], diameter/2+3, [placedStations[i].x, placedStations[i].y], diameter+3)) {
-				coords = closestValidCircle([placedStations[i].x, placedStations[i].y], diameter/2+3, [tempStation.x, tempStation.y], diameter+3);
-				tempStation.x = coords[0];
-				tempStation.y = coords[1];
+		if (!snapToGrid) {
+			snapToGrid([tempStation.x, tempStation.y],[sideStations[0].x*2+border, border], [windowWidth-border, windowHeight-border], gridSize)
+		}
+		else {
+			for (var i = 0; i < placedStations.length; i++) {
+				if (circlesBisect([tempStation.x,tempStation.y], diameter/2+3, [placedStations[i].x, placedStations[i].y], diameter+3)) {
+					coords = closestValidCircle([placedStations[i].x, placedStations[i].y], diameter/2+3, [tempStation.x, tempStation.y], diameter+3);
+					tempStation.x = coords[0];
+					tempStation.y = coords[1];
+				}
 			}
 		}
 
