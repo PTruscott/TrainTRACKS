@@ -30,7 +30,28 @@ function closestValidCircle(centre1, radius1, centre2, radius2) {
     return newPoint;
 }
 
+//centre [x,y] tl [x,y] br [x,y] 
 function snapToGrid(centre, tl, br, gridS) {
+    var newPoint = centre;
+    var x = tl[0]+(Math.floor((newPoint[0]-tl[0])/gridS))*gridS;
+    var y = tl[1]+(Math.floor((newPoint[1]-tl[1])/gridS))*gridS;
+
+    if (((newPoint[0]-tl[0])/gridS) % 1 > 0.5) {
+        x += gridS;
+    }
+    if (((newPoint[1]-tl[1])/gridS) % 1 > 0.5) {
+        y += gridS;
+    } 
+
+    newPoint[0] = x;
+    newPoint[1] = y;
+
+    //console.log(newPoint);
+
+    return newPoint;
+}
+
+/*function snapToGrid(centre, tl, br, gridS) {
     var newPoint = centre;
     //gets the border to try and centre the grid
     var xBorder = ((br[0]-tl[0]) % gridS)/2;
@@ -70,6 +91,7 @@ function snapToGrid(centre, tl, br, gridS) {
 
     return newPoint;
 }
+*/
 
 //where centre is an array where [0] = x and [1] = y
 //where rect is an array where [0] = x1, [1] = y1, [2] = x2, [3] = y2

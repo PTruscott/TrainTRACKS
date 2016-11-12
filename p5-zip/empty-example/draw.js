@@ -1,6 +1,6 @@
 
 //where top left and bottom right is an array where [0] = x and [1] = y
-function drawGrid(tl, br, gridS) {
+function drawGrid(tl, br, gridS, border) {
 
 	//gets the border to try and centre the grid
 	var xBorder = ((br[0]-tl[0]) % gridS)/2;
@@ -15,6 +15,8 @@ function drawGrid(tl, br, gridS) {
 	for (var i = xBorder+tl[0]; i < br[0]; i += gridS) {
 		line(i, tl[1]+yBorder, i, br[1]-yBorder);
 	}
+
+	return [xBorder+border, yBorder+border];
 
 }
 
@@ -64,7 +66,7 @@ function drawAllTrains() {
 	}
 }
 
-function drawStations() {
+function drawStations(borders) {
 	var colour;
 	stroke(0);
 	strokeWeight(strokeWidth);
@@ -101,8 +103,24 @@ function drawStations() {
 		var coords = insideBox([sideStations[0].x*2, 0], [window.innerWidth, window.innerHeight], [mouseX, mouseY], diameter/2);
 		tempStation.x = coords[0];
 		tempStation.y = coords[1];
-		if (!snapToGrid) {
-			snapToGrid([tempStation.x, tempStation.y],[sideStations[0].x*2+border, border], [windowWidth-border, windowHeight-border], gridSize)
+		if (snapToGrid) {
+			var bisect = true;
+			while (bisect) {
+				coords = snapToGrid([tempStation.x, tempStation.y],[sideStations[0].x*2+borders[0], borders[1]], [windowWidth-borders[0], windowHeight-borders[1]], gridSize)
+				tempStation.x = coords[0];
+				tempStation.y = coords[1];
+				for (var i = 0; i < placedStations.length; i++) {
+					bisect = false;
+					if (circlesBisect([tempStation.x,tempStation.y], diameter/2+3, [placedStations[i].x, placedStations[i].y], diameter+3)) {
+						bisect = true;
+						tempStation.x += gridS;
+						break;
+					}
+				}
+			}
+
+			tempStation.x = coords[0];
+			tempStation.y = coords[1];
 		}
 		else {
 			for (var i = 0; i < placedStations.length; i++) {
@@ -114,7 +132,15 @@ function drawStations() {
 			}
 		}
 
-		ellipse(tempStation.x, tempStation.y, diameter, diameter);
+		if (tempStation.x < borders[0] || tempStation.x > windowWidth-borders[0] || tempStation.y > windowHeight-borders[1] || tempStation.y < borders[1]) {
+			tempStation.x = NaN;
+			tempStation.y = Nan;
+			console.log(tempStation);
+		}
+		else {
+			ellipse(tempStation.x, tempStation.y, diameter, diameter);
+		}
+
 	}
 }
 

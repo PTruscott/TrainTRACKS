@@ -64,8 +64,6 @@ function draw() {
 	fill('#3399ff');
 	rect(0, 0, sideStations[0].x*2, windowHeight);
 	var border = diameter/2+strokeWidth +strokeWidth/2; 
-	drawGrid([sideStations[0].x*2+border, border], [windowWidth-border, windowHeight-border], gridSize);
-
 	//console.log(windowHeight);
 
 	strokeWeight(6);
@@ -75,7 +73,9 @@ function draw() {
 	drawRoads();
 
 	//draw stations
-	drawStations();
+	drawStations(
+		drawGrid([sideStations[0].x*2+border, border], [windowWidth-border, windowHeight-border], gridSize, border)
+	);
 	
 	//draw trains
 	drawAllTrains();
