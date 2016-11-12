@@ -94,8 +94,10 @@ function mousePressed() {
 		}
 	}
 
-	if (tempStation.type != 15) {
-		newStation(false, tempStation.type, tempStation.x, tempStation.y);
+	if (tempStation.type != 15 ) { 
+		if (tempStation.x != NaN && tempStation.y != NaN) {
+			newStation(false, tempStation.type, tempStation.x, tempStation.y);
+		}	
 	}
 	else {
 		//check collisions and select if example or delete

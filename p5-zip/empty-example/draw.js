@@ -103,17 +103,20 @@ function drawStations(borders) {
 		var coords = insideBox([sideStations[0].x*2, 0], [window.innerWidth, window.innerHeight], [mouseX, mouseY], diameter/2);
 		tempStation.x = coords[0];
 		tempStation.y = coords[1];
+
 		if (snapToGrid) {
 			var bisect = true;
+
 			while (bisect) {
 				coords = snapToGrid([tempStation.x, tempStation.y],[sideStations[0].x*2+borders[0], borders[1]], [windowWidth-borders[0], windowHeight-borders[1]], gridSize)
 				tempStation.x = coords[0];
 				tempStation.y = coords[1];
+				bisect = false;
+
 				for (var i = 0; i < placedStations.length; i++) {
-					bisect = false;
 					if (circlesBisect([tempStation.x,tempStation.y], diameter/2+3, [placedStations[i].x, placedStations[i].y], diameter+3)) {
 						bisect = true;
-						tempStation.x += gridS;
+						tempStation.x += gridSize;
 						break;
 					}
 				}
@@ -122,6 +125,7 @@ function drawStations(borders) {
 			tempStation.x = coords[0];
 			tempStation.y = coords[1];
 		}
+
 		else {
 			for (var i = 0; i < placedStations.length; i++) {
 				if (circlesBisect([tempStation.x,tempStation.y], diameter/2+3, [placedStations[i].x, placedStations[i].y], diameter+3)) {
@@ -134,10 +138,10 @@ function drawStations(borders) {
 
 		if (tempStation.x < borders[0] || tempStation.x > windowWidth-borders[0] || tempStation.y > windowHeight-borders[1] || tempStation.y < borders[1]) {
 			tempStation.x = NaN;
-			tempStation.y = Nan;
-			console.log(tempStation);
+			tempStation.y = NaN;
+			//console.log(tempStation);
 		}
-		else {
+		else { 
 			ellipse(tempStation.x, tempStation.y, diameter, diameter);
 		}
 
