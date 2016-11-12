@@ -150,6 +150,7 @@ function drawStations(borders) {
 
 function drawRoads() {
 	strokeWeight(strokeWidth);
+	stroke(0);
 	for (var i = 0; i < roads.length; i++) {
 		line(roads[i].station1.x, roads[i].station1.y,
 			roads[i].station2.x, roads[i].station2.y);

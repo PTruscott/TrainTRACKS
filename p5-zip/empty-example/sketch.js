@@ -66,16 +66,15 @@ function draw() {
 	var border = diameter/2+strokeWidth +strokeWidth/2; 
 	//console.log(windowHeight);
 
-	strokeWeight(6);
-	stroke(0);
+	//draws grid and gets boudning box of grid
+	var borders = drawGrid([sideStations[0].x*2+border, border], [windowWidth-border, windowHeight-border], gridSize, border);
 
 	//draw roads
 	drawRoads();
 
 	//draw stations
-	drawStations(
-		drawGrid([sideStations[0].x*2+border, border], [windowWidth-border, windowHeight-border], gridSize, border)
-	);
+	drawStations(borders);
+
 	
 	//draw trains
 	drawAllTrains();
