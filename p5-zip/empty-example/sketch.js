@@ -16,7 +16,7 @@ var trains = new Array();
 var trainSpeed;
 var stokeWidth;
 var osc;
-var snapToGrid = true;
+var snapping = false;
 var gridSize;
 var windowWidth = window.innerWidth.valueOf();
 var windowHeight = window.innerHeight.valueOf();
@@ -42,7 +42,7 @@ function setup() {
 	h -= strokeWidth;
 	h -= diameter;
 	gridSize = (h)/15;
-	trainSpeed = gridSize/4; 
+	trainSpeed = gridSize/6; 
 
 	road.y = 6*diameter*2;
 	road.x = diameter/2;
@@ -83,6 +83,7 @@ function draw() {
 function mousePressed() {
 	var side = false;
 
+	//click on the side deselects any selected item
 	if (tempStation.type != 15 || roadStatus != "blank" || trainSelected) {
 		if (mouseX < sideStations[0].x*2) {
 			tempStation.type = 15;
@@ -93,7 +94,9 @@ function mousePressed() {
 		}
 	}
 
+	//if a station is selected
 	if (tempStation.type != 15 ) { 
+		//if the station has a valid placement
 		if (tempStation.x != NaN && tempStation.y != NaN) {
 			newStation(false, tempStation.type, tempStation.x, tempStation.y);
 		}	
@@ -191,14 +194,43 @@ function mousePressed() {
 	redraw();
 }
 
+//updates the trains on screen
 function moveTrain(train) {
-	var theta = toDegrees(Math.atan((train.road.station1.y-train.road.station2.y)/(train.road.station1.x-train.road.station2.x)));
+
+	//gets the angle of the road
+	var theta = Math.atan((train.road.station1.y-train.road.station2.y)/(train.road.station1.x-train.road.station2.x));
+	var dTheta = toDegrees(theta);
+
 	if (train.target == train.road.station1) {
-		var otherStaion = train.road.station2;
+		var otherStation = train.road.station2;
 	}
 	else {
-		var otherStaion = train.road.station1;
+		var otherStation = train.road.station1;
 	}
+
+	
+	if (train.target.x > otherStation.x) {
+        train.x += trainSpeed*Math.cos(theta);
+    }
+    else {
+        train.x -= trainSpeed*Math.cos(theta);
+    } 
+
+    if (dTheta < 0 && train.target.y > otherStation.y) {
+        train.y -= trainSpeed*Math.sin(theta);
+    }
+    else if (dTheta > 0 && train.target.y > otherStation.y){
+        train.y += trainSpeed*Math.sin(theta);
+    } 
+    else if (dTheta < 0 && train.target.y < otherStation.y) {
+        train.y += trainSpeed*Math.sin(theta);
+    }
+
+    else {
+        train.y -= trainSpeed*Math.sin(theta);
+    }
+    
+    /*
 	if (train.target.x > otherStaion.x) {
 		train.x += trainSpeed*Math.cos(toRadians(theta));
 		train.y += trainSpeed*Math.sin(toRadians(theta));
@@ -206,8 +238,8 @@ function moveTrain(train) {
 	else {
 		train.x -= trainSpeed*Math.cos(toRadians(theta));
 		train.y -= trainSpeed*Math.sin(toRadians(theta));
+	}*/
 
-	}
 	if (trainDocked(train, train.road.station1) || trainDocked(train, train.road.station2)) {
 
 		if (!train.docked) {

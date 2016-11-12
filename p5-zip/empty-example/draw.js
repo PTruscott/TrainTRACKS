@@ -104,7 +104,7 @@ function drawStations(borders) {
 		tempStation.x = coords[0];
 		tempStation.y = coords[1];
 
-		if (snapToGrid) {
+		if (snapping) {
 			var bisect = true;
 
 			while (bisect) {
