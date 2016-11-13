@@ -16,7 +16,7 @@ var trains = new Array();
 var trainSpeed;
 var stokeWidth;
 var osc;
-var snapping = false;
+var snapping = true;
 var gridSize;
 var windowWidth = window.innerWidth.valueOf();
 var windowHeight = window.innerHeight.valueOf();
@@ -68,16 +68,18 @@ function draw() {
 
 	//draws grid and gets boudning box of grid
 	var borders = drawGrid([sideStations[0].x*2+border, border], [windowWidth-border, windowHeight-border], gridSize, border);
-
+	borders[0] += sideStations[0].x*2;
 	//draw roads
 	drawRoads();
 
 	//draw stations
 	drawStations(borders);
 
-	
 	//draw trains
 	drawAllTrains();
+
+	//drawSlider(windowWidth/2, windowHeight/2, 50, 20, false);
+	//drawSlider(windowWidth/2, windowHeight/3, 50, 20, true);	
 }
 
 function mousePressed() {

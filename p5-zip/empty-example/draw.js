@@ -17,7 +17,6 @@ function drawGrid(tl, br, gridS, border) {
 	}
 
 	return [xBorder+border, yBorder+border];
-
 }
 
 function drawTrain(x, y, theta) {
@@ -100,7 +99,7 @@ function drawStations(borders) {
 	
 	if (tempStation.type != 15) {
 		fill(getColourFromType(tempStation.type));
-		var coords = insideBox([sideStations[0].x*2, 0], [window.innerWidth, window.innerHeight], [mouseX, mouseY], diameter/2);
+		var coords = keepInsideBox([sideStations[0].x*2, 0], [window.innerWidth, window.innerHeight], [mouseX, mouseY], diameter/2);
 		tempStation.x = coords[0];
 		tempStation.y = coords[1];
 
@@ -135,7 +134,7 @@ function drawStations(borders) {
 				}
 			}
 		}
-
+		//console.log(borders[0], mouseX);
 		if (tempStation.x < borders[0] || tempStation.x > windowWidth-borders[0] || tempStation.y > windowHeight-borders[1] || tempStation.y < borders[1]) {
 			tempStation.x = NaN;
 			tempStation.y = NaN;

@@ -51,48 +51,6 @@ function snapToGrid(centre, tl, br, gridS) {
     return newPoint;
 }
 
-/*function snapToGrid(centre, tl, br, gridS) {
-    var newPoint = centre;
-    //gets the border to try and centre the grid
-    var xBorder = ((br[0]-tl[0]) % gridS)/2;
-    var yBorder = ((br[1]-tl[1]) % gridS)/2;
-    var x1, y1, x2, y2;
-
-    for (var i = yBorder+tl[1]; i < br[1]; i += gridS) {
-        if ((i-gridS) < centre[1] && i > centre[1]) {
-            y1 = i-gridS;
-            y2 = i;
-        }
-    }
-    for (var i = xBorder+tl[0]; i < br[0]; i += gridS) {
-        if ((i-gridS) < centre[0] && i > centre[0]) {
-            x1 = i-gridS;
-            x2 = i;
-        }
-    }
-
-    var points = new Array();
-    points.push({x: x1, y:y1});
-    points.push({x: x1, y:y2});
-    points.push({x: x2, y:y1});
-    points.push({x: x2, y:y2});
-
-    for (var i = 0; i < placedStations.length; i++) {
-        for (var j = 0; j < points.length; j++) {
-            if (circlesBisect([placedStations[i].x, placedStations[i].y], diameter, [points[i].x, points[i].y], 0)) {
-                points[i].x -= 1000;
-            }
-        }
-    }
-
-
-
-    newPoint = closetVertexInRectToPoint(centre, [x1, y1, x2, y2]);
-
-    return newPoint;
-}
-*/
-
 //where centre is an array where [0] = x and [1] = y
 //where rect is an array where [0] = x1, [1] = y1, [2] = x2, [3] = y2
 function closetVertexInRectToPoint(centre, rect) {
@@ -158,7 +116,7 @@ function getClosestPointOnLine(A, B, P) {
   
 //locks the point so it remains inside the box specified
 //top left, bottom right, and point are all arrays where [0] = x and [1] = y
-function insideBox(tl, br, point, radius) {
+function keepInsideBox(tl, br, point, radius) {
     var newPoint = point;
     for (var i = 0; i < tl.length; i++) {
       if (isNaN(tl[i]) || isNaN(br[i]) || isNaN(point[i]) || isNaN(radius)) {
