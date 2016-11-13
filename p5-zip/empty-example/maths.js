@@ -141,6 +141,17 @@ function keepInsideBox(tl, br, point, radius) {
     return newPoint;
 }
 
+//checks to see if a point[x,y] is inside a boc [x1,y1,x2,y2] and returns true if so
+function insideBox(box, point) {
+    if (point[0] < box[0] || point[0] > box[2]) {
+        return false;
+    }
+    if (point[1] < box[1] || point[1] > box[3]) {
+        return false;
+    }
+    return true;
+}
+
 //where rp is the rotation point, p is the point to be rotated, theta is the angle
 function rotatePoint(rpX, rpY, pX, pY, theta) {
 	var x = pX - rpX;

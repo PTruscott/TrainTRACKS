@@ -21,6 +21,8 @@ var gridSize;
 var windowWidth = window.innerWidth.valueOf();
 var windowHeight = window.innerHeight.valueOf();
 
+var slider;
+
 function newStation(example, type, x, y) {
 	if (example) {
 		sideStations.push({type: type, x: x, y: y});
@@ -54,6 +56,16 @@ function setup() {
 	// Start silent
   	osc.start();
   	osc.amp(0);
+
+  	slider = {
+		x:diameter/2-strokeWidth/2,
+		y:10+diameter/4,
+		width:diameter+strokeWidth,
+		height:diameter*4/7,
+		active:false,
+		draw: function() {drawSlider(this)},
+		click:function(point) {sliderClick(slider, point)},
+	}
 }
 
 function draw() {
@@ -78,12 +90,14 @@ function draw() {
 	//draw trains
 	drawAllTrains();
 
-	//drawSlider(windowWidth/2, windowHeight/2, 50, 20, false);
-	//drawSlider(windowWidth/2, windowHeight/3, 50, 20, true);	
+	slider.draw();
 }
 
 function mousePressed() {
 	var side = false;
+
+	slider.click([mouseX,mouseY]);
+	snapping = slider.active;
 
 	//click on the side deselects any selected item
 	if (tempStation.type != 15 || roadStatus != "blank" || trainSelected) {
