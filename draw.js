@@ -103,7 +103,7 @@ function drawStations(borders) {
 		tempStation.x = coords[0];
 		tempStation.y = coords[1];
 
-		if (snapping) {
+		if (snapSlider) {
 			var bisect = true;
 			//var dir = 0;
 			//var mult = 1;

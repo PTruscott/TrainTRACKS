@@ -16,12 +16,11 @@ var trains = new Array();
 var trainSpeed;
 var stokeWidth;
 var osc;
-var snapping = true;
 var gridSize;
 var windowWidth = window.innerWidth.valueOf();
 var windowHeight = window.innerHeight.valueOf();
 
-var slider;
+var snapSlider;
 
 function newStation(example, type, x, y) {
 	if (example) {
@@ -57,14 +56,14 @@ function setup() {
   	osc.start();
   	osc.amp(0);
 
-  	slider = {
+  	snapSlider = {
 		x:diameter/2-strokeWidth/2,
 		y:10+diameter/4,
 		width:diameter+strokeWidth,
 		height:diameter*4/7,
-		active:false,
+		active:true,
 		draw: function() {drawSlider(this)},
-		click:function(point) {sliderClick(slider, point)},
+		click:function(point) {sliderClick(snapSlider, point)},
 	}
 }
 
@@ -90,14 +89,13 @@ function draw() {
 	//draw trains
 	drawAllTrains();
 
-	slider.draw();
+	snapSlider.draw();
 }
 
 function mousePressed() {
 	var side = false;
 
-	slider.click([mouseX,mouseY]);
-	snapping = slider.active;
+	snapSlider.click([mouseX,mouseY]);
 
 	//click on the side deselects any selected item
 	if (tempStation.type != 15 || roadStatus != "blank" || trainSelected) {
@@ -185,23 +183,41 @@ function mousePressed() {
 
 		//road has been selected
 		else {
+			//checks if a station has been clicked on
 			for (var i = 0; i < placedStations.length; i++) {
 				if (Math.sqrt(
 					(placedStations[i].x-mouseX)*(placedStations[i].x-mouseX) + 
 					(mouseY-placedStations[i].y)*(mouseY-placedStations[i].y)) 
 					< diameter) {
+					var duplicate = false;
+					for (var j = 0; j < roads.length; j++) {
+						if (roads[j].station1 == pinnedStation && roads[j].station2 == placedStations[i]) {
+							duplicate = true;
+							break;
+						}
+						if (roads[j].station1 == placedStations[i] && roads[j].station2 == pinnedStation) {
+							duplicate = true;
+							break;
+						}
+					}
+					//selects now active station
 					if (roadStatus == "active") {
 						pinnedStation = placedStations[i];
 						roadStatus = "pinned";
 					}
+					//placing road
 					else if (roadStatus == "pinned") {
+						//clicking on own station deselcts it
 						if (pinnedStation == placedStations[i]) {
 							roadStatus = "blank";
 							pinnedStation = "";
 						}
 						else {
-							roadStatus = "pinned";
-							roads.push({station1: pinnedStation, station2: placedStations[i]});
+							//if road already exists don't add a new one just move pinned station
+							if (!duplicate) {
+								//adds a road between two stations
+								roads.push({station1: pinnedStation, station2: placedStations[i]});
+							}
 							pinnedStation = placedStations[i];
 						}
 					}
@@ -231,7 +247,7 @@ function moveTrain(train) {
 		var otherStation = train.road.station1;
 	}
 
-	
+	//What angle to move the train at
 	if (train.target.x > otherStation.x) {
         train.x += trainSpeed*Math.cos(theta);
     }
@@ -252,17 +268,8 @@ function moveTrain(train) {
     else {
         train.y -= trainSpeed*Math.sin(theta);
     }
-    
-    /*
-	if (train.target.x > otherStaion.x) {
-		train.x += trainSpeed*Math.cos(toRadians(theta));
-		train.y += trainSpeed*Math.sin(toRadians(theta));
-	}
-	else {
-		train.x -= trainSpeed*Math.cos(toRadians(theta));
-		train.y -= trainSpeed*Math.sin(toRadians(theta));
-	}*/
 
+    //if train reaches a station
 	if (trainDocked(train, train.road.station1) || trainDocked(train, train.road.station2)) {
 
 		if (!train.docked) {
