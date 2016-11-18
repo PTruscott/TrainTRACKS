@@ -182,6 +182,8 @@ function mousePressed() {
 				roadStatus = "active";
 			}
 		}
+
+		//road has been selected
 		else {
 			for (var i = 0; i < placedStations.length; i++) {
 				if (Math.sqrt(
@@ -192,11 +194,16 @@ function mousePressed() {
 						pinnedStation = placedStations[i];
 						roadStatus = "pinned";
 					}
-					else if (roadStatus == "pinned" && pinnedStation != placedStations[i]) {
-						roadStatus = "pinned";
-						roads.push({station1: pinnedStation, station2: placedStations[i]});
-						pinnedStation = placedStations[i];
-
+					else if (roadStatus == "pinned") {
+						if (pinnedStation == placedStations[i]) {
+							roadStatus = "blank";
+							pinnedStation = "";
+						}
+						else {
+							roadStatus = "pinned";
+							roads.push({station1: pinnedStation, station2: placedStations[i]});
+							pinnedStation = placedStations[i];
+						}
 					}
 					break;
 				}

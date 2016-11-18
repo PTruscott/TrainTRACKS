@@ -105,6 +105,8 @@ function drawStations(borders) {
 
 		if (snapping) {
 			var bisect = true;
+			//var dir = 0;
+			//var mult = 1;
 
 			while (bisect) {
 				coords = snapToGrid([tempStation.x, tempStation.y],[sideStations[0].x*2+borders[0], borders[1]], [windowWidth-borders[0], windowHeight-borders[1]], gridSize)
@@ -115,10 +117,36 @@ function drawStations(borders) {
 				for (var i = 0; i < placedStations.length; i++) {
 					if (circlesBisect([tempStation.x,tempStation.y], diameter/2+3, [placedStations[i].x, placedStations[i].y], diameter+3)) {
 						bisect = true;
+						/*console.log(dir);
+						switch (dir) {
+							case 0: 
+								tempStation.x += gridSize*mult;
+								break;
+							case 1: 
+								tempStation.x -= gridSize*mult;
+								tempStation.y += gridSize*mult;
+								break;
+							case 2:
+								tempStation.x -= gridSize*mult;
+								tempStation.y -= gridSize*mult;
+								break;
+							case 3:
+								tempStation.x += gridSize*mult;
+								tempStation.y -= gridSize*mult;
+								break;
+							case 4:
+								dir = -1;
+								mult++;
+								break;
+							default:
+								console.log("uh oh");
+								break;
+						}*/ 
 						tempStation.x += gridSize;
 						break;
 					}
-				}
+				}		
+				//dir += 1;
 			}
 
 			tempStation.x = coords[0];
