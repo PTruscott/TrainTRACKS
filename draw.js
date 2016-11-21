@@ -61,7 +61,11 @@ function drawAllTrains() {
 	for (var i = 0; i < trains.length; i++) {
 		var theta = toDegrees(Math.atan((trains[i].road.station1.y-trains[i].road.station2.y)/(trains[i].road.station1.x-trains[i].road.station2.x)));
 		drawTrain(trains[i].x, trains[i].y, theta);
-		moveTrain(trains[i]);
+	}
+	if (playSlider.active) {
+		for (var i = 0; i < trains.length; i++) {
+			moveTrain(trains[i]);
+		}
 	}
 }
 
@@ -103,7 +107,7 @@ function drawStations(borders) {
 		tempStation.x = coords[0];
 		tempStation.y = coords[1];
 
-		if (snapSlider) {
+		if (snapSlider.active) {
 			var bisect = true;
 			//var dir = 0;
 			//var mult = 1;

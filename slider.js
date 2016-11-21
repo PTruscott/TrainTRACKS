@@ -1,14 +1,15 @@
 //example slider:
-
+/*
 var slider = {
 	x:10,
 	y:10,
 	width:20,
 	height:10,
 	active:false,
+	colour: 0
 	draw: function() {drawSlider(this)},
 	click:function(point) {sliderClick(slider, point)},
-}
+}*/
 
 //draws a slider
 function drawSlider(slider) {
@@ -18,7 +19,7 @@ function drawSlider(slider) {
 	if (slider.active) {
 		divX = divX*3;
 	}
-	fill(0);
+	fill(slider.colour);
 	rect(slider.x,slider.y,divX,slider.height);
 	fill(250);
 	rect(slider.x+divX, slider.y, slider.width-divX, slider.height);
@@ -32,6 +33,7 @@ function drawSlider(slider) {
 function sliderClick(slider, point) {
 	if (insideBox([slider.x,slider.y,slider.x+slider.width,slider.y+slider.height], point)) {
 		slider.active = !slider.active;
+		//console.log("clicked");
 		return true;
 	}
 	else {

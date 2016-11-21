@@ -21,6 +21,7 @@ var windowWidth = window.innerWidth.valueOf();
 var windowHeight = window.innerHeight.valueOf();
 
 var snapSlider;
+var playSlider;
 
 function newStation(example, type, x, y) {
 	if (example) {
@@ -62,9 +63,21 @@ function setup() {
 		width:diameter+strokeWidth,
 		height:diameter*4/7,
 		active:true,
+		colour: 0,
 		draw: function() {drawSlider(this)},
-		click:function(point) {sliderClick(snapSlider, point)},
+		click: function(point) {sliderClick(this, point)},
 	}
+	playSlider = {
+		x:diameter*4,
+		y:10+diameter/4,
+		width:diameter+strokeWidth,
+		height:diameter*4/7,
+		active:true,
+		colour: "#ff0000",
+		draw: function() {drawSlider(this)},
+		click: function(point) {sliderClick(this, point)},
+	}
+
 }
 
 function draw() {
@@ -90,12 +103,14 @@ function draw() {
 	drawAllTrains();
 
 	snapSlider.draw();
+	playSlider.draw();
 }
 
 function mousePressed() {
 	var side = false;
 
 	snapSlider.click([mouseX,mouseY]);
+	playSlider.click([mouseX,mouseY]);
 
 	//click on the side deselects any selected item
 	if (tempStation.type != 15 || roadStatus != "blank" || trainSelected) {
